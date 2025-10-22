@@ -3,7 +3,9 @@ import os
 import base64
 import json
 
+
 AIPIPE_TOKEN = os.getenv("AIPIPE_TOKEN")
+
 
 def create_app(brief, attachments):
     os.makedirs("app", exist_ok=True)
@@ -13,6 +15,11 @@ def create_app(brief, attachments):
         prompt += "The following attachments are provided (use as app samples if needed):\n"
         for att in attachments:
             prompt += f"- {att['name']} (data URI)\n"
+
+    # Add explicit instruction for LLM to use CORS proxy in generated JS fetch requests
+    prompt += ("\nIMPORTANT: When fetching external APIs from client-side JavaScript, "
+               "always prepend URLs with the CORS proxy 'https://api.allorigins.win/get?url=' "
+               "to ensure browsers allow cross-origin requests and avoid CORS errors.\n")
 
     headers = {
         "Authorization": f"Bearer {AIPIPE_TOKEN}",
