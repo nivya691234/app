@@ -4,6 +4,7 @@ import base64
 import json
 
 AIPIPE_TOKEN = os.getenv("AIPIPE_TOKEN")
+
 def create_app(brief, attachments):
     os.makedirs("app", exist_ok=True)
     user_prompt = brief
@@ -53,12 +54,16 @@ def create_app(brief, attachments):
 
     for filename, content in files_json["files"].items():
         with open(os.path.join("app", filename), "w", encoding="utf-8") as f:
-            f.write(content)
+            if isinstance(content, str):
+                f.write(content)
+            else:
+                json.dump(content, f, indent=2)
 
     for att in attachments:
         name, dataurl = att['name'], att['url']
         if dataurl.startswith("data:"):
             header, encoded = dataurl.split(",", 1)
+            encoded += "=" * (-len(encoded) % 4)  # Fix incorrect padding
             path = os.path.join("app", name)
             with open(path, "wb") as f:
                 f.write(base64.b64decode(encoded))
